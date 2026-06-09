@@ -19,19 +19,12 @@ mcp = FastMCP("MCP Estacion Meteorologica")
 TABLA = "datos_sensor"
 
 
-def limpiar_valores(datos, campo):
-    return [
-        float(x[campo])
-        for x in datos
-        if x.get(campo) is not None
-    ]
+# ==========================
+# FUNCIONES INTERNAS
+# ==========================
 
+def _obtener_ultima_lectura():
 
-@mcp.tool()
-def obtener_ultima_lectura() -> dict:
-    """
-    Obtiene la última lectura registrada por la estación meteorológica.
-    """
     response = (
         supabase.table(TABLA)
         .select("*")
@@ -46,11 +39,8 @@ def obtener_ultima_lectura() -> dict:
     return response.data[0]
 
 
-@mcp.tool()
-def obtener_ultimas_lecturas(limite: int = 50) -> list:
-    """
-    Obtiene las últimas lecturas de temperatura, humedad y presión.
-    """
+def _obtener_ultimas_lecturas(limite=50):
+
     response = (
         supabase.table(TABLA)
         .select("*")
@@ -62,15 +52,12 @@ def obtener_ultimas_lecturas(limite: int = 50) -> list:
     return response.data
 
 
-@mcp.tool()
-def obtener_datos_grafico(limite: int = 100) -> list:
-    """
-    Obtiene datos ordenados cronológicamente para gráficos del dashboard.
-    """
+def _obtener_datos_grafico(limite=100):
+
     response = (
         supabase.table(TABLA)
         .select("created_at,temp,humedad,presion,id_sensor")
-        .order("created_at", desc=False)
+        .order("created_at")
         .limit(limite)
         .execute()
     )
@@ -78,61 +65,12 @@ def obtener_datos_grafico(limite: int = 100) -> list:
     return response.data
 
 
-@mcp.tool()
-def obtener_lecturas_por_sensor(id_sensor: int, limite: int = 100) -> list:
-    """
-    Obtiene las lecturas de un sensor específico.
-    """
-    response = (
-        supabase.table(TABLA)
-        .select("*")
-        .eq("id_sensor", id_sensor)
-        .order("created_at", desc=False)
-        .limit(limite)
-        .execute()
-    )
+def _obtener_resumen_estacion(limite=100):
 
-    return response.data
-
-
-@mcp.tool()
-def obtener_lecturas_por_fecha(fecha_inicio: str, fecha_fin: str) -> list:
-    """
-    Obtiene lecturas entre dos fechas.
-
-    Ejemplo:
-    fecha_inicio = '2026-06-01T00:00:00Z'
-    fecha_fin = '2026-06-08T23:59:59Z'
-    """
-    response = (
-        supabase.table(TABLA)
-        .select("*")
-        .gte("created_at", fecha_inicio)
-        .lte("created_at", fecha_fin)
-        .order("created_at", desc=False)
-        .execute()
-    )
-
-    return response.data
-
-
-@mcp.tool()
-def obtener_resumen_estacion(limite: int = 100) -> dict:
-    """
-    Calcula resumen estadístico de las últimas lecturas.
-    """
-    response = (
-        supabase.table(TABLA)
-        .select("*")
-        .order("created_at", desc=True)
-        .limit(limite)
-        .execute()
-    )
-
-    datos = response.data
+    datos = _obtener_ultimas_lecturas(limite)
 
     if not datos:
-        return {"mensaje": "No hay datos disponibles"}
+        return {"mensaje": "No hay datos"}
 
     temperaturas = limpiar_valores(datos, "temp")
     humedades = limpiar_valores(datos, "humedad")
@@ -140,25 +78,21 @@ def obtener_resumen_estacion(limite: int = 100) -> dict:
 
     return {
         "total_lecturas": len(datos),
-        "temperatura_promedio": round(statistics.mean(temperaturas), 2),
+        "temperatura_promedio": round(statistics.mean(temperaturas),2),
         "temperatura_maxima": max(temperaturas),
         "temperatura_minima": min(temperaturas),
-        "humedad_promedio": round(statistics.mean(humedades), 2),
+        "humedad_promedio": round(statistics.mean(humedades),2),
         "humedad_maxima": max(humedades),
         "humedad_minima": min(humedades),
-        "presion_promedio": round(statistics.mean(presiones), 2),
+        "presion_promedio": round(statistics.mean(presiones),2),
         "presion_maxima": max(presiones),
-        "presion_minima": min(presiones),
-        "ultima_fecha": datos[0]["created_at"]
+        "presion_minima": min(presiones)
     }
 
 
-@mcp.tool()
-def detectar_alertas() -> dict:
-    """
-    Detecta alertas meteorológicas básicas usando la última lectura.
-    """
-    lectura = obtener_ultima_lectura()
+def _detectar_alertas():
+
+    lectura = _obtener_ultima_lectura()
 
     if "mensaje" in lectura:
         return lectura
@@ -179,55 +113,53 @@ def detectar_alertas() -> dict:
         alertas.append("Humedad elevada")
 
     if presion < 1000:
-        alertas.append("Presión baja, posible cambio climático o lluvia")
+        alertas.append("Posible lluvia")
 
     return {
         "estado": "Con alertas" if alertas else "Normal",
-        "alertas": alertas,
-        "ultima_lectura": lectura
+        "alertas": alertas
     }
 
 
-@mcp.tool()
-def datos_para_dashboard(limite: int = 100) -> dict:
-    """
-    Devuelve todos los datos que necesita una IA para crear un dashboard.
-    """
+def _datos_para_dashboard(limite=100):
+
     return {
-        "ultima_lectura": obtener_ultima_lectura(),
-        "resumen": obtener_resumen_estacion(limite),
-        "alertas": detectar_alertas(),
-        "datos_grafico": obtener_datos_grafico(limite),
-        "tabla": obtener_ultimas_lecturas(limite),
-        "graficos_recomendados": [
-            "Temperatura vs tiempo",
-            "Humedad vs tiempo",
-            "Presión atmosférica vs tiempo"
-        ]
+        "ultima_lectura": _obtener_ultima_lectura(),
+        "resumen": _obtener_resumen_estacion(limite),
+        "alertas": _detectar_alertas(),
+        "historico": _obtener_datos_grafico(limite),
+        "tabla": _obtener_ultimas_lecturas(limite)
     }
+
+# ==========================
+# HERRAMIENTAS MCP
+# ==========================
+
+@mcp.tool()
+def obtener_ultima_lectura():
+    return _obtener_ultima_lectura()
 
 
 @mcp.tool()
-def generar_prompt_dashboard() -> str:
-    """
-    Genera un prompt para que una IA cree un dashboard web.
-    """
-    return """
-Crea un dashboard web moderno para una estación meteorológica IoT usando los datos de la herramienta datos_para_dashboard.
-
-El dashboard debe incluir:
-- Tarjetas de temperatura, humedad y presión actual.
-- Gráficos de línea para temperatura, humedad y presión.
-- Tabla con las últimas lecturas.
-- Sección de alertas meteorológicas.
-- Diseño responsivo.
-- Estilo académico y profesional.
-"""
+def obtener_ultimas_lecturas(limite:int=50):
+    return _obtener_ultimas_lecturas(limite)
 
 
-if __name__ == "__main__":
-     mcp.run(
-        transport="http",
-        host="0.0.0.0",
-        port=8000
-    )
+@mcp.tool()
+def obtener_datos_grafico(limite:int=100):
+    return _obtener_datos_grafico(limite)
+
+
+@mcp.tool()
+def obtener_resumen_estacion(limite:int=100):
+    return _obtener_resumen_estacion(limite)
+
+
+@mcp.tool()
+def detectar_alertas():
+    return _detectar_alertas()
+
+
+@mcp.tool()
+def datos_para_dashboard(limite:int=100):
+    return _datos_para_dashboard(limite)
