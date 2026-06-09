@@ -17,7 +17,11 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 mcp = FastMCP("MCP Estacion Meteorologica")
 
 TABLA = "datos_sensor"
-
+def limpiar_valores(datos, campo): 
+    return [ float(x[campo]) 
+            for x in datos
+              if x.get(campo) is not None 
+              ]
 
 # ==========================
 # FUNCIONES INTERNAS
