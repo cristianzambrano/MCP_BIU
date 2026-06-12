@@ -167,3 +167,49 @@ def detectar_alertas():
 @mcp.tool()
 def datos_para_dashboard(limite:int=100):
     return _datos_para_dashboard(limite)
+
+@mcp.prompt()
+def prompt_dashboard_tendencias(fecha_inicio: str, fecha_fin: str):
+    """
+    Prompt para analizar tendencias entre dos fechas.
+    """
+    return f"""
+Utiliza la herramienta obtener_lecturas_por_fecha(
+    fecha_inicio="{fecha_inicio}",
+    fecha_fin="{fecha_fin}"
+).
+
+Construye un dashboard analítico de tendencias para una estación meteorológica.
+
+Incluye:
+
+1. Serie temporal de temperatura.
+2. Serie temporal de humedad.
+3. Serie temporal de presión atmosférica.
+5. Detección automática de:
+   - Picos máximos
+   - Picos mínimos
+   - Cambios bruscos
+6. Estadísticas:
+   - Promedio
+   - Desviación estándar
+   - Valor máximo
+   - Valor mínimo
+7. Conclusiones automáticas sobre el comportamiento de la estación.
+
+El dashboard debe ser una página web descargable.
+Entrega el resultado como una página web completa en HTML, CSS y JavaScript.
+El diseño debe ser tipo Power BI o Grafana.
+"""
+
+@mcp.prompt()
+def prompt_dashboard_personalizado(tipo_dashboard: str = "ejecutivo", limite: int = 100):
+    return f"""
+Utiliza la herramienta datos_para_dashboard(limite={limite}).
+
+Crea un dashboard meteorológico de tipo: {tipo_dashboard}.
+
+Incluye KPIs, gráficos interactivos, alertas automáticas, tabla de lecturas recientes y conclusiones.
+
+Entrega el resultado como una página web completa en HTML, CSS y JavaScript.
+"""
