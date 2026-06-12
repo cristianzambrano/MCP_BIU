@@ -139,33 +139,183 @@ def _datos_para_dashboard(limite=100):
 # HERRAMIENTAS MCP
 # ==========================
 
+# ==========================
+# HERRAMIENTAS MCP
+# ==========================
+
 @mcp.tool()
 def obtener_ultima_lectura():
+    """
+    Obtiene la lectura más reciente registrada por la estación meteorológica.
+
+    Usar esta herramienta cuando el usuario pregunte por:
+    - temperatura actual
+    - humedad actual
+    - presión actual
+    - última lectura del sensor
+    - estado actual de la estación meteorológica
+
+    Devuelve:
+    - id
+    - fecha y hora de registro
+    - temperatura
+    - humedad
+    - presión atmosférica
+    - id del sensor
+
+    No usar para:
+    - históricos
+    - gráficos
+    - promedios
+    - análisis de tendencias
+    """
     return _obtener_ultima_lectura()
 
 
 @mcp.tool()
-def obtener_ultimas_lecturas(limite:int=50):
+def obtener_ultimas_lecturas(limite: int = 50):
+    """
+    Obtiene las últimas lecturas registradas en la estación meteorológica.
+
+    Usar esta herramienta cuando el usuario pida:
+    - últimas lecturas
+    - tabla de datos recientes
+    - registros recientes del sensor
+    - listado de mediciones
+    - últimos datos guardados en Supabase
+
+    Parámetros:
+    - limite: número máximo de registros a devolver. Por defecto 50.
+
+    Devuelve una lista ordenada desde la lectura más reciente hacia atrás.
+
+    No usar para:
+    - resumen estadístico
+    - alertas
+    - gráficos cronológicos completos
+    """
     return _obtener_ultimas_lecturas(limite)
 
 
 @mcp.tool()
-def obtener_datos_grafico(limite:int=100):
+def obtener_datos_grafico(limite: int = 100):
+    """
+    Obtiene datos meteorológicos preparados para construir gráficos.
+
+    Usar esta herramienta cuando el usuario solicite:
+    - gráfico de temperatura
+    - gráfico de humedad
+    - gráfico de presión
+    - serie temporal
+    - visualización histórica
+    - datos para dashboard gráfico
+
+    Parámetros:
+    - limite: número máximo de registros a devolver. Por defecto 100.
+
+    Devuelve:
+    - fecha y hora
+    - temperatura
+    - humedad
+    - presión
+    - id del sensor
+
+    Los datos se devuelven ordenados cronológicamente.
+
+    No usar para:
+    - última lectura actual
+    - tabla de registros recientes
+    - alertas automáticas
+    """
     return _obtener_datos_grafico(limite)
 
 
 @mcp.tool()
-def obtener_resumen_estacion(limite:int=100):
+def obtener_resumen_estacion(limite: int = 100):
+    """
+    Calcula un resumen estadístico de la estación meteorológica.
+
+    Usar esta herramienta cuando el usuario pregunte por:
+    - promedio de temperatura
+    - temperatura máxima o mínima
+    - humedad promedio
+    - presión promedio
+    - resumen general de la estación
+    - estadísticas de las lecturas
+
+    Parámetros:
+    - limite: cantidad de lecturas recientes que se usarán para calcular el resumen. Por defecto 100.
+
+    Devuelve:
+    - total de lecturas analizadas
+    - temperatura promedio, máxima y mínima
+    - humedad promedio, máxima y mínima
+    - presión promedio, máxima y mínima
+
+    No usar para:
+    - obtener solo la última lectura
+    - generar una tabla detallada
+    - detectar alertas actuales
+    """
     return _obtener_resumen_estacion(limite)
 
 
 @mcp.tool()
 def detectar_alertas():
+    """
+    Detecta alertas meteorológicas usando la última lectura registrada.
+
+    Usar esta herramienta cuando el usuario pregunte:
+    - hay alertas
+    - estado de riesgo
+    - temperatura alta
+    - posible lluvia
+    - humedad elevada
+    - estado actual de la estación
+
+    Criterios de alerta:
+    - temperatura >= 35: temperatura alta
+    - temperatura <= 15: temperatura baja
+    - humedad >= 85: humedad elevada
+    - presión < 1000: posible lluvia
+
+    Devuelve:
+    - estado general: Normal o Con alertas
+    - lista de alertas detectadas
+
+    No usar para:
+    - análisis histórico
+    - gráficos
+    - promedios
+    """
     return _detectar_alertas()
 
 
 @mcp.tool()
-def datos_para_dashboard(limite:int=100):
+def datos_para_dashboard(limite: int = 100):
+    """
+    Obtiene todos los datos necesarios para construir un dashboard meteorológico completo.
+
+    Usar esta herramienta cuando el usuario solicite:
+    - crear dashboard
+    - panel meteorológico
+    - página web de monitoreo
+    - dashboard tipo Power BI
+    - dashboard tipo Grafana
+    - indicadores, gráficos, alertas y tabla en una sola vista
+
+    Parámetros:
+    - limite: número máximo de registros recientes para gráficos, tabla y resumen. Por defecto 100.
+
+    Devuelve:
+    - última lectura
+    - resumen estadístico
+    - alertas actuales
+    - histórico para gráficos
+    - tabla de lecturas recientes
+
+    Esta es la herramienta recomendada para construir interfaces web, dashboards o reportes completos.
+    """
     return _datos_para_dashboard(limite)
 
 @mcp.prompt()
