@@ -14,7 +14,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-mcp = FastMCP("MCP Estacion Meteorologica")
+mcp = FastMCP("MCP Estación Meteorológica")
 
 TABLA = "datos_sensor"
 def limpiar_valores(datos, campo): 
@@ -134,10 +134,6 @@ def _datos_para_dashboard(limite=100):
         "historico": _obtener_datos_grafico(limite),
         "tabla": _obtener_ultimas_lecturas(limite)
     }
-
-# ==========================
-# HERRAMIENTAS MCP
-# ==========================
 
 # ==========================
 # HERRAMIENTAS MCP
